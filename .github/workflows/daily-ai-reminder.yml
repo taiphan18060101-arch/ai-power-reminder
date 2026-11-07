@@ -1,1 +1,36 @@
 
+name: Daily AI Power Reminder
+
+on:
+  schedule:
+    - cron: "0 5 * * *"
+      timezone: "Asia/Ho_Chi_Minh"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate-message:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Generate daily AI message
+        run: npm run generate
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          GEMINI_MODEL: gemini-2.5-flash
+
