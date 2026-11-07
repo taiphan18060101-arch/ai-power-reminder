@@ -1,0 +1,14 @@
+
+{
+  "name": "ai-power-reminder",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "AI Power Reminder - Daily AI reminder generator",
+  "scripts": {
+    "generate": "node generate-daily-message.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.0.0"
+  }
+}
