@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#142238">
+  <meta name="description" content="Ứng dụng nhắc nhở học sinh tiết kiệm điện trước khi ra về">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <title>AI Power Reminder</title>
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-icon">⚡</div>
+      <div><strong>AI POWER REMINDER</strong><small>TIẾT KIỆM ĐIỆN HỌC ĐƯỜNG</small></div>
+    </div>
+    <span class="version">V1.0</span>
+  </header>
+
+  <main class="container">
+    <section id="studentView" class="view">
+      <div class="hero">
+        <div class="eyebrow">TRƯỜNG THPT TRẦN HƯNG ĐẠO</div>
+        <h1>Trước khi ra về,<br><span>hãy kiểm tra điện!</span></h1>
+        <p>Một phút kiểm tra hôm nay – thói quen tiết kiệm điện mỗi ngày.</p>
+      </div>
+
+      <section class="panel class-panel">
+        <label for="classSelect">Lớp của bạn</label>
+        <select id="classSelect">
+          <option value="11A1">11A1 – Nhóm đối chứng</option>
+          <option value="11A2">11A2 – Nhóm thực nghiệm</option>
+        </select>
+        <div id="groupHint" class="group-hint">Lời nhắc cố định – nhóm đối chứng.</div>
+      </section>
+
+      <section class="message-card" aria-live="polite">
+        <div class="message-top"><span class="spark">✦</span><strong id="messageLabel">LỜI NHẮC HÔM NAY</strong></div>
+        <p id="reminderMessage">Các bạn hãy kiểm tra và tắt những thiết bị điện không còn sử dụng trước khi ra về nhé!</p>
+        <small id="messageSource">Thông điệp cố định của chương trình.</small>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <div><span class="eyebrow">CHECKLIST CUỐI BUỔI</span><h2>Kiểm tra thiết bị</h2></div>
+          <span class="count" id="progressCount">0/5</span>
+        </div>
+        <p class="muted">Chỉ đánh dấu sau khi đã trực tiếp kiểm tra thiết bị.</p>
+        <div id="deviceList" class="device-list">
+          <label class="device-row"><input type="checkbox"><span class="fake-check"></span><span><b>Đèn chiếu sáng</b><small>Kiểm tra các công tắc đèn trong lớp</small></span></label>
+        </div>
+        <div class="progress"><div id="progressBar"></div></div>
+        <div class="progress-meta"><span>Tiến độ hoàn thành</span><b id="progressPercent">0%</b></div>
+        <label class="confirm-box"><input id="honestConfirm" type="checkbox"><span>Tôi xác nhận đã kiểm tra trực tiếp các thiết bị được đánh dấu.</span></label>
+        <button id="submitCheckin" class="button primary full" disabled>XÁC NHẬN HOÀN THÀNH</button>
+        <div id="studentFeedback" class="feedback" role="status"></div>
+      </section>
+
+      <div class="privacy-note">Không cần tạo tài khoản hoặc nhập họ tên. Mỗi lượt xác nhận chỉ ghi nhận lớp, thiết bị và thời gian.</div>
+    </section>
+
+    <section id="adminView" class="view hidden">
+      <div class="hero compact">
+        <div class="eyebrow">KHU VỰC GIÁO VIÊN / NGHIÊN CỨU</div>
+        <h1>Bảng điều khiển<br><span>nghiên cứu</span></h1>
+        <p>Theo dõi dữ liệu xác nhận của hai lớp.</p>
+      </div>
+      <section id="adminLogin" class="panel">
+        <h2>Đăng nhập quản trị</h2>
+        <p class="muted">Chỉ tài khoản quản trị được cấp quyền mới xem được dữ liệu nghiên cứu.</p>
+        <label for="adminEmail">Email quản trị</label><input id="adminEmail" type="email" autocomplete="username" placeholder="Email giáo viên">
+        <label for="adminPassword">Mật khẩu</label><input id="adminPassword" type="password" autocomplete="current-password" placeholder="Mật khẩu">
+        <button id="adminLoginButton" class="button primary full">ĐĂNG NHẬP</button>
+        <div id="adminLoginFeedback" class="feedback"></div>
+      </section>
+      <section id="adminDashboard" class="hidden">
+        <div class="admin-toolbar"><span id="adminIdentity" class="muted"></span><button id="logoutButton" class="button light">Đăng xuất</button></div>
+        <div class="stats-grid">
+          <div class="stat-card"><strong id="totalCheckins">0</strong><span>Tổng lượt xác nhận</span></div>
+          <div class="stat-card"><strong id="todayCheckins">0</strong><span>Lượt hôm nay</span></div>
+        </div>
+        <div class="panel">
+          <div class="panel-heading"><div><span class="eyebrow">SO SÁNH NHÓM</span><h2>Dữ liệu theo lớp</h2></div><button id="refreshButton" class="button light">Làm mới</button></div>
+          <div id="classStats" class="class-stats"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-heading"><div><span class="eyebrow">QR TRUY CẬP</span><h2>Mã QR từng lớp</h2></div></div>
+          <p class="muted">Sau khi website được đưa lên Internet, tạo và tải mã QR cho từng lớp tại đây.</p>
+          <div class="qr-grid">
+            <div class="qr-item"><b>Lớp 11A1</b><div id="qr11a1" class="qr"></div><button class="button light full" data-qr="11A1">Tải QR 11A1</button></div>
+            <div class="qr-item"><b>Lớp 11A2</b><div id="qr11a2" class="qr"></div><button class="button light full" data-qr="11A2">Tải QR 11A2</button></div>
+          </div>
+          <div id="qrFeedback" class="feedback"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-heading"><div><span class="eyebrow">NHẬT KÝ</span><h2>Lượt xác nhận gần đây</h2></div><button id="exportButton" class="button light">Xuất CSV</button></div>
+          <div id="recentCheckins" class="recent-list"></div>
+        </div>
+      </section>
+    </section>
+
+    <section id="setupView" class="view hidden">
+      <div class="hero compact"><div class="eyebrow">THIẾT LẬP LẦN ĐẦU</div><h1>Kết nối<br><span>Firebase</span></h1></div>
+      <div class="panel"><h2>Chưa cấu hình Firebase</h2><p class="muted">Bộ mã nguồn đã sẵn sàng. Để lưu dữ liệu dùng chung giữa các điện thoại, cần thêm Firebase Web Config và triển khai website lên Internet. Hãy làm theo tệp HUONG_DAN.txt trong gói mã nguồn.</p></div>
+    </section>
+  </main>
+
+  <footer>AI POWER REMINDER · TRƯỜNG THPT TRẦN HƯNG ĐẠO</footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

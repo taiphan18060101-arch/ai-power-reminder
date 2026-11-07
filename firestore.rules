@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isAdmin() {
+      return signedIn()
+        && request.auth.token.email == "THAY_EMAIL_GIAO_VIEN_CUA_BAN";
+    }
+
+    // Student app reads no private student information.
+    // Public/anonymous users may only create a constrained check-in.
+    match /checkins/{checkinId} {
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly([
+          "classId", "group", "action", "checkedDeviceIds",
+          "checkedDeviceNames", "completion", "createdAt",
+          "dateKey", "appVersion"
+        ])
+        && request.resource.data.classId in ["11A1", "11A2"]
+        && request.resource.data.group in ["control", "experimental"]
+        && request.resource.data.action == "Tắt thiết bị khi ra về"
+        && request.resource.data.completion == 100
+        && request.resource.data.checkedDeviceIds is list
+        && request.resource.data.checkedDeviceIds.size() == 5
+        && request.resource.data.checkedDeviceNames is list
+        && request.resource.data.checkedDeviceNames.size() == 5
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.appVersion == "1.0";
+      allow read: if isAdmin();
+      allow update, delete: if isAdmin();
+    }
+  }
+}

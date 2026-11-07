@@ -1,0 +1,17 @@
+{
+  "name": "AI Power Reminder",
+  "short_name": "Power Reminder",
+  "start_url": "./?class=11A1",
+  "display": "standalone",
+  "background_color": "#f3f6fa",
+  "theme_color": "#142238",
+  "description": "Nhắc nhở học sinh kiểm tra thiết bị điện trước khi ra về",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

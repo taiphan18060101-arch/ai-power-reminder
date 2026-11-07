@@ -1,0 +1,68 @@
+AI POWER REMINDER V1.0 – HƯỚNG DẪN TRIỂN KHAI
+
+MỤC TIÊU
+- 11A1: nhóm đối chứng, lời nhắc cố định.
+- 11A2: nhóm thực nghiệm, đã có phân nhóm và vị trí tích hợp lời nhắc AI ở V2.0.
+- Học sinh quét QR, không cần đăng nhập/không nhập họ tên.
+- Dữ liệu check-in lưu tập trung Firestore.
+- Giáo viên đăng nhập email/mật khẩu để xem dashboard và xuất CSV.
+
+QUAN TRỌNG
+Đây là bộ mã nguồn triển khai, không phải website đã được đưa lên Internet. Cần cấu hình Firebase và hosting một lần. Firebase Web Config không phải mật khẩu; tuyệt đối không đưa Service Account private key vào website.
+
+A. TẠO FIREBASE
+1. Vào https://console.firebase.google.com/ tạo project.
+2. Thêm Web App (biểu tượng </>) và sao chép Firebase config.
+3. Trong thư mục mã nguồn, sao chép firebase-config.example.js thành firebase-config.js.
+4. Điền các giá trị config thật và ADMIN_EMAIL là email giáo viên.
+5. Authentication > Sign-in method:
+   - Bật Anonymous.
+   - Bật Email/Password.
+6. Authentication > Users: tạo tài khoản giáo viên bằng email/password.
+7. Firestore Database: tạo database ở Production mode.
+8. Firestore > Rules: dán nội dung firestore.rules sau khi thay
+   THAY_EMAIL_GIAO_VIEN_CUA_BAN bằng email quản trị thật.
+9. Publish Rules.
+
+B. ĐƯA WEBSITE LÊN INTERNET
+1. Tạo repository GitHub mới, ví dụ ai-power-reminder.
+2. Tải các tệp trong thư mục này lên repository.
+3. Phải thêm firebase-config.js đã cấu hình vào repository.
+4. Repository Settings > Pages > Deploy from a branch > main / root > Save.
+5. Chờ GitHub Pages xuất bản website HTTPS.
+6. Mở đường dẫn website để kiểm tra.
+
+C. QR
+- QR lớp 11A1: https://TEN-USER.github.io/ai-power-reminder/?class=11A1
+- QR lớp 11A2: https://TEN-USER.github.io/ai-power-reminder/?class=11A2
+- Trang quản trị: https://TEN-USER.github.io/ai-power-reminder/?admin=1
+Thay TEN-USER và tên repository bằng địa chỉ thực tế.
+Đăng nhập trang quản trị, QR sẽ hiển thị và có thể tải về.
+
+D. CÁCH DÙNG
+Học sinh:
+1. Quét QR của lớp.
+2. Kiểm tra đủ 5 thiết bị.
+3. Tích ô xác nhận đã trực tiếp kiểm tra.
+4. Nhấn XÁC NHẬN HOÀN THÀNH.
+Không nhập họ tên, không tạo tài khoản.
+
+Giáo viên:
+1. Mở trang quản trị ?admin=1.
+2. Đăng nhập bằng tài khoản email/password đã tạo trong Firebase.
+3. Xem tổng lượt, số lượt theo lớp và các lượt gần đây.
+4. Xuất CSV để phân tích.
+
+E. GIỚI HẠN V1.0 VÀ LƯU Ý NGHIÊN CỨU
+- V1.0 ghi nhận lượt hoàn thành checklist, chưa xác minh điện đã thực sự tắt.
+- Một lượt xác nhận không đồng nghĩa với một học sinh; có thể nhiều học sinh cùng tham gia hoặc một người quét nhiều lần.
+- Để đánh giá hành vi thực tế, cần quan sát độc lập hoặc có nhật ký của giáo viên.
+- V1.0 chưa gọi AI. 11A2 hiện dùng thông điệp nền; V2.0 sẽ tích hợp AI tạo thông điệp cá nhân hóa. Không được mô tả dữ liệu V1.0 là kết quả do AI tạo.
+- Nên giữ thời điểm nhắc, nội dung checklist và quy trình như nhau giữa hai lớp; khác biệt can thiệp là lời nhắc cố định so với lời nhắc AI.
+- Chỉ thu thập dữ liệu tối thiểu, không thu họ tên học sinh. Thực hiện chấp thuận của nhà trường/phụ huynh theo quy định áp dụng.
+
+F. LỖI THƯỜNG GẶP
+- Trang báo Firebase chưa cấu hình: kiểm tra đã tạo firebase-config.js đúng tên chưa.
+- Học sinh không lưu được: kiểm tra đã bật Anonymous Authentication và publish Firestore Rules.
+- Giáo viên không xem được: kiểm tra email trong firebase-config.js và firestore.rules phải giống nhau.
+- QR phải dùng URL HTTPS thật sau khi GitHub Pages đã chạy; không dùng localhost.

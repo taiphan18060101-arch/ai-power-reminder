@@ -1,0 +1,23 @@
+AI POWER REMINDER V1.0 – FIREBASE CONFIGURED PACKAGE
+
+1. File firebase-config.js has been created with the Firebase Web App configuration
+   visible in the Firebase screenshot for project ai-power-reminder.
+2. Open firebase-config.js in a text editor.
+3. Replace THAY_BANG_EMAIL_GIAO_VIEN_CUA_BAN with the exact teacher email that
+   you already placed in Firestore Rules. Keep the quotation marks.
+4. Save the file.
+5. Upload ALL files in this folder to the ROOT of the GitHub repository.
+   Include firebase-config.js. Do not upload any service-account private key.
+6. Enable GitHub Pages from Settings > Pages > Deploy from a branch > main > /(root).
+7. Test the student links:
+   https://YOUR-USERNAME.github.io/YOUR-REPOSITORY/?class=11A1
+   https://YOUR-USERNAME.github.io/YOUR-REPOSITORY/?class=11A2
+8. Test teacher dashboard:
+   https://YOUR-USERNAME.github.io/YOUR-REPOSITORY/?admin=1
+
+IMPORTANT CHECKS
+- Authentication must have Anonymous and Email/Password enabled.
+- Firestore Rules must contain the exact teacher email and have been Published.
+- Do not switch Firestore to test mode or use allow read, write: if true.
+- This V1.0 records checklist confirmations; it does not electrically verify that
+  devices are actually switched off.
