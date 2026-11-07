@@ -11,4 +11,4 @@ export const firebaseConfig = {
 };
 
 // Replace this placeholder with the exact teacher email used in Firestore Rules.
-export const ADMIN_EMAIL = "taiphan1806010101@gmail.com";
+export const ADMIN_EMAIL = "taiphan18060101@gmail.com";
