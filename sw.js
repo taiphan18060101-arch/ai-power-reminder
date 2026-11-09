@@ -143,6 +143,7 @@ self.addEventListener("activate", event => {
 });
 
 
+
 // Xử lý yêu cầu tải tài nguyên
 
 self.addEventListener("fetch", event => {
@@ -188,6 +189,9 @@ self.addEventListener("fetch", event => {
         });
       }
     })()
+  );
+});
+
 
 
   }
