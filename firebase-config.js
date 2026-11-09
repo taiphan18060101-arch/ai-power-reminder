@@ -12,3 +12,4 @@ export const firebaseConfig = {
 
 // Replace this placeholder with the exact teacher email used in Firestore Rules.
 export const ADMIN_EMAIL = "taiphan18060101@gmail.com";
+export const VAPID_PUBLIC_KEY = "BN3F6kj9HfBw2khL_cHHfYmF0pXGVBd8QUnyA2CevnO7lbCOhpJXV5KLMFh_nne_cAhxdsldHVRfoQbSiwpOOV8";
