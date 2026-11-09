@@ -4,7 +4,6 @@ name: AI Power Reminder - Send Notifications
 on:
   schedule:
     - cron: "*/5 * * * *"
-      timezone: "Asia/Ho_Chi_Minh"
   workflow_dispatch:
 
 permissions:
