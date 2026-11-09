@@ -181,7 +181,7 @@ self.addEventListener("fetch", event => {
           }
         }
 
-        return new Response("Không thể tải tài nguyên.", {
+                return new Response("Không thể tải tài nguyên.", {
           status: 503,
           headers: {
             "Content-Type": "text/plain; charset=utf-8"
