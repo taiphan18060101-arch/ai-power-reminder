@@ -31,7 +31,7 @@ jobs:
         run: npm install --omit=dev
 
       - name: Send scheduled notifications
-        run: node send-reminder.js
+        run: node send-reminder.cjs
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
 
