@@ -1,56 +1,382 @@
+
 <!doctype html>
 <html lang="vi">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#142238">
-  <meta name="description" content="Ứng dụng nhắc nhở học sinh tiết kiệm điện trước khi ra về">
+  <meta name="theme-color" content="#f5f8ff">
+  <meta name="description" content="AI Power Reminder - Nhắc nhở tiết kiệm điện học đường">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./styles.css">
-  <title>AI Power Reminder</title>
+  <title>AI Power Reminder V2.0</title>
   <style>
-    .public-chart{display:grid;gap:14px}.chart-day{padding:12px;border:1px solid #e5eaf0;border-radius:12px}.chart-date{font-weight:700;margin-bottom:8px}.chart-bars{display:grid;gap:7px}.chart-bar-row{display:grid;grid-template-columns:42px 1fr 28px;gap:8px;align-items:center;font-size:13px}.chart-track{height:12px;background:#edf1f5;border-radius:20px;overflow:hidden}.chart-fill{height:100%;border-radius:20px}.group-a{background:#3478c8}.group-b{background:#16a085}.public-stats-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.public-stat{background:#fff;border:1px solid #e5eaf0;border-radius:14px;padding:18px;text-align:center}.public-stat strong{display:block;font-size:28px;margin-bottom:6px}.public-stat span{font-size:13px;color:#64748b}@media(max-width:560px){.public-stats-grid{grid-template-columns:1fr}.public-stat{padding:14px}.public-stat strong{font-size:24px}}
+    :root {
+      --primary:#3775ec;
+      --primary-dark:#245cc5;
+      --ink:#182b4a;
+      --muted:#70819b;
+      --line:#e3eaf5;
+      --bg:#f5f8ff;
+      --white:#fff;
+      --shadow:0 10px 30px rgba(30,67,132,.07);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:linear-gradient(180deg,#f8fbff,#f1f6ff);
+      color:var(--ink);
+      font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+      line-height:1.55;
+      min-height:100vh;
+    }
+    button,input,select{font:inherit}
+    button{cursor:pointer}
+    a{color:var(--primary-dark)}
+    .app-header{
+      max-width:1120px;margin:auto;padding:22px 24px 12px;
+      display:flex;justify-content:space-between;align-items:center;
+    }
+    .brand{display:flex;align-items:center;gap:12px}
+    .brand-icon{
+      width:48px;height:48px;border-radius:15px;
+      background:linear-gradient(135deg,#397ef8,#65b8fa);
+      color:white;display:grid;place-items:center;font-size:25px;
+    }
+    .brand strong{display:block;font-size:15px;letter-spacing:.04em}
+    .brand small{color:var(--muted);font-size:10px;letter-spacing:.12em}
+    .version{
+      background:white;border:1px solid #dce8fc;
+      color:var(--primary);border-radius:30px;padding:6px 13px;
+      font-size:12px;font-weight:800;
+    }
+    .container{max-width:1120px;margin:auto;padding:20px 24px 55px}
+    .view{display:block}
+    .hidden{display:none!important}
+    .hero{
+      padding:36px 38px;border-radius:25px;
+      background:linear-gradient(115deg,#e5f0ff,#f3f9ff 55%,#eafbf5);
+      border:1px solid #dbe8fa;margin-bottom:24px;
+    }
+    .eyebrow{font-size:11px;font-weight:850;letter-spacing:.12em;color:#5680b8}
+    .hero h1{font-size:clamp(29px,4vw,45px);line-height:1.2;margin:13px 0}
+    .hero h1 span{color:var(--primary)}
+    .hero p{color:#617794;margin:0}
+    .hero.compact{padding:28px 34px}
+    .hero.compact h1{font-size:36px}
+    .student-layout{
+      display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,1fr);
+      gap:20px;align-items:start;
+    }
+    .student-left,.student-right{display:grid;gap:20px}
+    .panel,.message-card,.notice-panel,.stat-card,.public-stat{
+      background:white;border:1px solid var(--line);
+      border-radius:20px;padding:23px;box-shadow:var(--shadow);
+    }
+    .panel h2{font-size:19px;margin:5px 0 0}
+    .panel-heading{
+      display:flex;justify-content:space-between;
+      align-items:center;gap:12px;margin-bottom:15px;
+    }
+    .muted{color:var(--muted);font-size:14px}
+    label{font-size:14px;font-weight:700}
+    select,input[type=email],input[type=password],input[type=time]{
+      width:100%;border:1px solid #dce5f3;border-radius:12px;
+      padding:12px;color:var(--ink);background:#fbfdff;outline:none;
+    }
+    select:focus,input:focus{
+      border-color:#80aaf6;box-shadow:0 0 0 3px #e9f1ff;
+    }
+    .group-hint{margin-top:10px;color:#607895;font-size:13px}
+    .message-card{
+      background:linear-gradient(145deg,#eef5ff,#f6fbff);
+      border-color:#d7e7ff;
+    }
+    .message-top{display:flex;align-items:center;gap:10px;color:#2d69d3;font-size:12px}
+    .spark{
+      display:grid;place-items:center;background:#dbeaff;
+      border-radius:10px;width:31px;height:31px;font-size:20px;
+    }
+    .message-card p{font-size:17px;line-height:1.7;font-weight:650;margin:16px 0}
+    .message-card small{color:#6d83a4}
+    .count{
+      border-radius:30px;background:#e9f2ff;color:#3977e9;
+      padding:6px 11px;font-size:12px;font-weight:850;
+    }
+    .device-list{display:grid;gap:9px;margin:18px 0}
+    .device-list label{
+      display:flex;align-items:center;gap:12px;padding:13px;
+      border:1px solid #e5ebf4;border-radius:13px;
+      background:#fbfdff;cursor:pointer;
+    }
+    .device-list input{accent-color:var(--primary);width:18px;height:18px}
+    .device-list label:has(input:checked){background:#eef8f3;border-color:#c4ead8}
+    .progress{height:10px;background:#edf2fa;border-radius:30px;overflow:hidden;margin:18px 0 7px}
+    .progress>div{
+      height:100%;width:0;background:linear-gradient(90deg,#5c91ff,#36c7a4);
+      border-radius:30px;transition:width .25s;
+    }
+    .progress-meta{display:flex;justify-content:space-between;font-size:13px;color:#6e7f99}
+    .confirm-box{
+      display:flex;align-items:flex-start;gap:10px;padding:14px;
+      border-radius:13px;background:#f6f9fe;margin:18px 0;
+      font-size:13px;color:#536b88;
+    }
+    .confirm-box input{accent-color:var(--primary);margin-top:3px}
+    .button{
+      display:inline-flex;align-items:center;justify-content:center;
+      border:1px solid transparent;border-radius:12px;
+      padding:11px 17px;font-weight:800;font-size:13px;min-height:44px;
+    }
+    .button.primary{
+      background:linear-gradient(135deg,#397df4,#2767df);
+      color:white;box-shadow:0 6px 15px rgba(49,111,226,.18);
+    }
+    .button.light{background:#f0f5ff;color:#3569c6;border-color:#dce8fb}
+    .button:disabled{opacity:.5;cursor:not-allowed}
+    .full{width:100%}
+    .feedback{font-size:13px;margin-top:12px;color:#436080}
+    .notice-heading{display:flex;gap:12px;align-items:center}
+    .notice-icon{
+      display:grid;place-items:center;width:42px;height:42px;
+      border-radius:13px;background:#eaf2ff;font-size:22px;
+    }
+    .notice-heading h2{margin:0;font-size:17px}
+    .notice-panel p{font-size:13px;color:#74849c;margin:12px 0 15px}
+    .privacy-note{color:#8391a8;font-size:12px;text-align:center;padding:10px}
+    .admin-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+    .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:20px}
+    .stat-card strong,.public-stat strong{font-size:30px;display:block;color:#2f70d7}
+    .stat-card span,.public-stat span{color:var(--muted);font-size:13px}
+    .admin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+    .admin-grid .wide{grid-column:1/-1}
+    .qr-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+    .qr-item{text-align:center;border:1px solid var(--line);border-radius:15px;padding:13px}
+    .qr-item b{display:block;margin-bottom:8px}
+    .qr{display:flex;justify-content:center;align-items:center;min-height:145px}
+    .qr img,.qr canvas{max-width:100%;height:auto}
+    .recent-list,.class-stats{overflow-x:auto}
+    .public-stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
+    .public-stat{text-align:center;padding:18px 10px}
+    .public-chart{display:grid;gap:14px}
+    .weekday-picker{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0}
+    .weekday-picker label{
+      display:flex;gap:5px;align-items:center;border:1px solid #dfe8f6;
+      border-radius:10px;padding:7px 9px;font-size:12px;background:#fbfdff;
+    }
+    .weekday-picker input{accent-color:var(--primary)}
+    footer{
+      max-width:1120px;margin:auto;padding:20px 24px 30px;
+      text-align:center;font-size:11px;font-weight:750;
+      letter-spacing:.1em;color:#91a1b7;
+    }
+    @media(max-width:800px){
+      .student-layout,.admin-grid{grid-template-columns:1fr}
+      .admin-grid .wide{grid-column:auto}
+      .public-stats-grid{grid-template-columns:repeat(2,1fr)}
+      .qr-grid{grid-template-columns:repeat(2,1fr)}
+    }
+    @media(max-width:560px){
+      .app-header{padding:16px}
+      .container{padding:12px 14px 40px}
+      .hero{padding:25px 21px}
+      .hero.compact{padding:23px 21px}
+      .panel,.message-card,.notice-panel{padding:19px}
+      .public-stat strong{font-size:23px}
+      .qr{min-height:115px}
+    }
   </style>
 </head>
 <body>
-  <header class="app-header">
-    <div class="brand"><div class="brand-icon">⚡</div><div><strong>AI POWER REMINDER</strong><small>TIẾT KIỆM ĐIỆN HỌC ĐƯỜNG</small></div></div>
-    <span class="version">V1.1</span>
-  </header>
-  <main class="container">
-    <section id="studentView" class="view">
-      <div class="hero"><div class="eyebrow">TRƯỜNG THPT TRẦN HƯNG ĐẠO</div><h1>Trước khi ra về,<br><span>hãy kiểm tra điện!</span></h1><p>Một phút kiểm tra hôm nay – thói quen tiết kiệm điện mỗi ngày.</p></div>
-      <section class="panel class-panel"><label for="classSelect">Lớp của bạn</label><select id="classSelect"><option value="11A1">11A1 – Nhóm đối chứng</option><option value="11A2">11A2 – Nhóm thực nghiệm</option></select><div id="groupHint" class="group-hint">Lời nhắc cố định – nhóm đối chứng.</div></section>
-      <section class="message-card" aria-live="polite"><div class="message-top"><span class="spark">✦</span><strong id="messageLabel">LỜI NHẮC HÔM NAY</strong></div><p id="reminderMessage">Các bạn hãy kiểm tra và tắt những thiết bị điện không còn sử dụng trước khi ra về nhé!</p><small id="messageSource">Thông điệp cố định của chương trình.</small></section>
-      <section class="panel"><div class="panel-heading"><div><span class="eyebrow">CHECKLIST CUỐI BUỔI</span><h2>Kiểm tra thiết bị</h2></div><span class="count" id="progressCount">0/5</span></div><p class="muted">Chỉ đánh dấu sau khi đã trực tiếp kiểm tra thiết bị.</p><div id="deviceList" class="device-list"></div><div class="progress"><div id="progressBar"></div></div><div class="progress-meta"><span>Tiến độ hoàn thành</span><b id="progressPercent">0%</b></div><label class="confirm-box"><input id="honestConfirm" type="checkbox"><span>Tôi xác nhận đã kiểm tra trực tiếp các thiết bị được đánh dấu.</span></label><button id="submitCheckin" class="button primary full" disabled>XÁC NHẬN HOÀN THÀNH</button><div id="studentFeedback" class="feedback" role="status"></div></section>
-      <div class="privacy-note">Không cần tạo tài khoản hoặc nhập họ tên. Mỗi lượt xác nhận chỉ ghi nhận lớp, thiết bị và thời gian.</div>
+<header class="app-header">
+  <div class="brand">
+    <div class="brand-icon">⚡</div>
+    <div><strong>AI POWER REMINDER</strong><small>TIẾT KIỆM ĐIỆN HỌC ĐƯỜNG</small></div>
+  </div>
+  <span class="version">V2.0</span>
+</header>
+
+<main class="container">
+
+  <!-- GIAO DIỆN HỌC SINH -->
+  <section id="studentView" class="view">
+    <div class="hero">
+      <div class="eyebrow">TRƯỜNG THPT TRẦN HƯNG ĐẠO · KHỐI 11</div>
+      <h1>Mỗi ngày một hành động,<br><span>tiết kiệm điện hôm nay!</span></h1>
+      <p>Cùng xây dựng thói quen kiểm tra và tắt thiết bị điện trước khi rời lớp học.</p>
+    </div>
+
+    <div class="student-layout">
+      <div class="student-left">
+        <section class="panel class-panel">
+          <label for="classSelect">🏫 Chọn lớp của bạn</label>
+          <select id="classSelect">
+            <option value="11A1">Lớp 11A1</option>
+            <option value="11A2">Lớp 11A2</option>
+            <option value="11A3">Lớp 11A3</option>
+            <option value="11A4">Lớp 11A4</option>
+          </select>
+          <div id="groupHint" class="group-hint">Lịch nhắc và nội dung chung dành cho khối 11.</div>
+        </section>
+
+        <section class="message-card" aria-live="polite">
+          <div class="message-top"><span class="spark">✦</span><strong id="messageLabel">LỜI NHẮC HÔM NAY</strong></div>
+          <p id="reminderMessage">Hãy kiểm tra đèn, quạt, máy chiếu và máy tính trước khi ra về nhé!</p>
+          <small id="messageSource">Thông điệp của chương trình tiết kiệm điện.</small>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <div><span class="eyebrow">CHECKLIST CUỐI BUỔI</span><h2>Kiểm tra thiết bị điện</h2></div>
+            <span class="count" id="progressCount">0/4</span>
+          </div>
+          <p class="muted">Chỉ đánh dấu khi bạn đã trực tiếp kiểm tra thiết bị.</p>
+          <div id="deviceList" class="device-list"></div>
+          <div class="progress"><div id="progressBar"></div></div>
+          <div class="progress-meta"><span>Tiến độ hoàn thành</span><b id="progressPercent">0%</b></div>
+          <label class="confirm-box">
+            <input id="honestConfirm" type="checkbox">
+            <span>Tôi xác nhận đã trực tiếp kiểm tra những thiết bị được đánh dấu.</span>
+          </label>
+          <button id="submitCheckin" class="button primary full" disabled>✓ XÁC NHẬN HOÀN THÀNH</button>
+          <div id="studentFeedback" class="feedback" role="status"></div>
+        </section>
+      </div>
+
+      <aside class="student-right">
+        <section class="notice-panel">
+          <div class="notice-heading"><span class="notice-icon">🔔</span><h2>Nhắc nhở tự động</h2></div>
+          <p>Cho phép nhận thông báo để không quên kiểm tra thiết bị cuối buổi học, kể cả khi không mở ứng dụng.</p>
+          <button id="enableNotificationsButton" class="button primary full" type="button" disabled>BẬT THÔNG BÁO</button>
+          <div id="notificationFeedback" class="feedback" role="status">Tính năng sẽ hoạt động sau khi tích hợp FCM.</div>
+        </section>
+        <div class="privacy-note">Không cần nhập họ tên. Ứng dụng ghi nhận lớp, thiết bị và thời gian xác nhận.</div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- GIAO DIỆN GIÁO VIÊN -->
+  <section id="adminView" class="view hidden">
+    <div class="hero compact">
+      <div class="eyebrow">KHU VỰC GIÁO VIÊN</div>
+      <h1>Bảng điều khiển<br><span>quản lý ứng dụng</span></h1>
+      <p>Quản lý lịch nhắc chung và theo dõi hoạt động của bốn lớp khối 11.</p>
+    </div>
+
+    <section id="adminLogin" class="panel" style="max-width:480px;margin:auto">
+      <h2>Đăng nhập quản trị</h2>
+      <p class="muted">Chỉ tài khoản giáo viên được cấp quyền mới xem dữ liệu.</p>
+      <label for="adminEmail">Email quản trị</label>
+      <input id="adminEmail" type="email" autocomplete="username" placeholder="Email giáo viên">
+      <label for="adminPassword" style="display:block;margin-top:14px">Mật khẩu</label>
+      <input id="adminPassword" type="password" autocomplete="current-password" placeholder="Mật khẩu">
+      <button id="adminLoginButton" class="button primary full" style="margin-top:17px">ĐĂNG NHẬP</button>
+      <div id="adminLoginFeedback" class="feedback"></div>
     </section>
 
-    <section id="adminView" class="view hidden">
-      <div class="hero compact"><div class="eyebrow">KHU VỰC GIÁO VIÊN / NGHIÊN CỨU</div><h1>Bảng điều khiển<br><span>nghiên cứu</span></h1><p>Theo dõi dữ liệu xác nhận của hai lớp.</p></div>
-      <section id="adminLogin" class="panel"><h2>Đăng nhập quản trị</h2><p class="muted">Chỉ tài khoản quản trị được cấp quyền mới xem được dữ liệu nghiên cứu.</p><label for="adminEmail">Email quản trị</label><input id="adminEmail" type="email" autocomplete="username" placeholder="Email giáo viên"><label for="adminPassword">Mật khẩu</label><input id="adminPassword" type="password" autocomplete="current-password" placeholder="Mật khẩu"><button id="adminLoginButton" class="button primary full">ĐĂNG NHẬP</button><div id="adminLoginFeedback" class="feedback"></div></section>
-      <section id="adminDashboard" class="hidden">
-        <div class="admin-toolbar"><span id="adminIdentity" class="muted"></span><button id="logoutButton" class="button light">Đăng xuất</button></div>
-        <div class="stats-grid"><div class="stat-card"><strong id="totalCheckins">0</strong><span>Tổng lượt xác nhận</span></div><div class="stat-card"><strong id="todayCheckins">0</strong><span>Lượt hôm nay</span></div></div>
-        <div class="panel"><div class="panel-heading"><div><span class="eyebrow">CÔNG KHAI</span><h2>Đồng bộ thống kê</h2></div></div><p class="muted">Sau khi tải dữ liệu mới nhất, nhấn nút dưới đây để cập nhật dashboard công khai.</p><button id="updatePublicStatsButton" class="button primary full">CẬP NHẬT THỐNG KÊ CÔNG KHAI</button><div id="publicStatsFeedback" class="feedback"></div><p><a href="?dashboard" target="_blank" rel="noopener">Mở dashboard công khai</a></p></div>
-        <div class="panel"><div class="panel-heading"><div><span class="eyebrow">SO SÁNH NHÓM</span><h2>Dữ liệu theo lớp</h2></div><button id="refreshButton" class="button light">Làm mới dữ liệu</button></div><div id="classStats" class="class-stats"></div></div>
-        <div class="panel"><div class="panel-heading"><div><span class="eyebrow">QR TRUY CẬP</span><h2>Mã QR từng lớp</h2></div></div><p class="muted">Tạo và tải mã QR cho từng lớp.</p><div class="qr-grid"><div class="qr-item"><b>Lớp 11A1</b><div id="qr11a1" class="qr"></div><button class="button light full" data-qr="11A1">Tải QR 11A1</button></div><div class="qr-item"><b>Lớp 11A2</b><div id="qr11a2" class="qr"></div><button class="button light full" data-qr="11A2">Tải QR 11A2</button></div></div><div id="qrFeedback" class="feedback"></div></div>
-        <div class="panel"><div class="panel-heading"><div><span class="eyebrow">NHẬT KÝ</span><h2>Lượt xác nhận gần đây</h2></div><button id="exportButton" class="button light">Xuất CSV</button></div><div id="recentCheckins" class="recent-list"></div></div>
-      </section>
-    </section>
+    <section id="adminDashboard" class="hidden">
+      <div class="admin-toolbar">
+        <span id="adminIdentity" class="muted"></span>
+        <button id="logoutButton" class="button light">Đăng xuất</button>
+      </div>
 
-    <section id="dashboardView" class="view hidden">
-      <div class="hero compact"><div class="eyebrow">TRƯỜNG THPT TRẦN HƯNG ĐẠO</div><h1>Thống kê<br><span>tiết kiệm điện</span></h1><p>Số lượt xác nhận được tổng hợp từ hai lớp nghiên cứu.</p></div>
-      <div class="public-stats-grid"><div class="public-stat"><strong id="publicTotal">0</strong><span>Tổng lượt xác nhận</span></div><div class="public-stat"><strong id="public11A1">0</strong><span>11A1 · Nhóm đối chứng</span></div><div class="public-stat"><strong id="public11A2">0</strong><span>11A2 · Nhóm thực nghiệm</span></div></div>
-      <section class="panel"><div class="panel-heading"><div><span class="eyebrow">DIỄN BIẾN THEO NGÀY</span><h2>So sánh hai lớp</h2></div><button id="dashboardReloadButton" class="button light">Làm mới</button></div><div class="muted" style="margin-bottom:12px">Mỗi thanh biểu thị số lượt xác nhận trong ngày.</div><div id="dailyChart" class="public-chart"></div><div id="dashboardFeedback" class="feedback"></div><small id="publicUpdatedAt" class="muted"></small></section>
-      <div class="privacy-note">Dashboard chỉ hiển thị số liệu tổng hợp, không công khai thông tin chi tiết của học sinh.</div>
-    </section>
+      <div class="stats-grid">
+        <div class="stat-card"><strong id="totalCheckins">0</strong><span>Tổng lượt xác nhận</span></div>
+        <div class="stat-card"><strong id="todayCheckins">0</strong><span>Lượt hôm nay</span></div>
+      </div>
 
-    <section id="setupView" class="view hidden"><div class="hero compact"><div class="eyebrow">THIẾT LẬP LẦN ĐẦU</div><h1>Kết nối<br><span>Firebase</span></h1></div><div class="panel"><h2>Chưa cấu hình Firebase</h2><p class="muted">Hãy kiểm tra tệp firebase-config.js và cấu hình Firebase của ứng dụng.</p></div></section>
-  </main>
-  <footer>AI POWER REMINDER · TRƯỜNG THPT TRẦN HƯNG ĐẠO</footer>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script type="module" src="./app.js"></script>
+      <div class="admin-grid">
+        <section class="panel">
+          <div class="panel-heading"><div><span class="eyebrow">LỊCH CHUNG CHO 4 LỚP</span><h2>🔔 Cài đặt lời nhắc</h2></div></div>
+          <label for="reminderTime">Giờ gửi thông báo</label>
+          <input id="reminderTime" type="time" value="16:30">
+          <div class="muted" style="margin-top:14px">Chọn các ngày trong tuần</div>
+          <div class="weekday-picker">
+            <label><input type="checkbox" name="reminderWeekday" value="1" checked> T2</label>
+            <label><input type="checkbox" name="reminderWeekday" value="2" checked> T3</label>
+            <label><input type="checkbox" name="reminderWeekday" value="3" checked> T4</label>
+            <label><input type="checkbox" name="reminderWeekday" value="4" checked> T5</label>
+            <label><input type="checkbox" name="reminderWeekday" value="5" checked> T6</label>
+            <label><input type="checkbox" name="reminderWeekday" value="6"> T7</label>
+            <label><input type="checkbox" name="reminderWeekday" value="0"> CN</label>
+          </div>
+          <button id="saveReminderScheduleButton" class="button primary full" type="button" disabled>LƯU LỊCH NHẮC</button>
+          <div id="scheduleFeedback" class="feedback">Chưa kích hoạt: cần kết nối Firestore và bộ gửi thông báo.</div>
+          <p class="muted">Một lịch và một nội dung nhắc chung áp dụng cho cả bốn lớp.</p>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading"><div><span class="eyebrow">DASHBOARD</span><h2>Thống kê hoạt động</h2></div></div>
+          <p class="muted">Cập nhật số liệu tổng hợp của bốn lớp.</p>
+          <button id="updatePublicStatsButton" class="button primary full">CẬP NHẬT THỐNG KÊ</button>
+          <div id="publicStatsFeedback" class="feedback"></div>
+          <p><a href="?dashboard" target="_blank" rel="noopener">Mở dashboard công khai</a></p>
+        </section>
+
+        <section class="panel wide">
+          <div class="panel-heading"><div><span class="eyebrow">THỐNG KÊ</span><h2>Tổng hợp theo lớp</h2></div><button id="refreshButton" class="button light">Làm mới dữ liệu</button></div>
+          <div id="classStats" class="class-stats"></div>
+        </section>
+
+        <section class="panel wide">
+          <div class="panel-heading"><div><span class="eyebrow">QR TRUY CẬP</span><h2>Mã QR từng lớp</h2></div></div>
+          <p class="muted">Mỗi lớp sử dụng một mã QR riêng để truy cập ứng dụng.</p>
+          <div class="qr-grid">
+            <div class="qr-item"><b>11A1</b><div id="qr11a1" class="qr"></div><button class="button light full" data-qr="11A1">Tải QR 11A1</button></div>
+            <div class="qr-item"><b>11A2</b><div id="qr11a2" class="qr"></div><button class="button light full" data-qr="11A2">Tải QR 11A2</button></div>
+            <div class="qr-item"><b>11A3</b><div id="qr11a3" class="qr"></div><button class="button light full" data-qr="11A3">Tải QR 11A3</button></div>
+            <div class="qr-item"><b>11A4</b><div id="qr11a4" class="qr"></div><button class="button light full" data-qr="11A4">Tải QR 11A4</button></div>
+          </div>
+          <div id="qrFeedback" class="feedback"></div>
+        </section>
+
+        <section class="panel wide">
+          <div class="panel-heading"><div><span class="eyebrow">NHẬT KÝ</span><h2>Lượt xác nhận gần đây</h2></div><button id="exportButton" class="button light">Xuất CSV</button></div>
+          <div id="recentCheckins" class="recent-list"></div>
+        </section>
+      </div>
+    </section>
+  </section>
+
+  <!-- DASHBOARD CÔNG KHAI -->
+  <section id="dashboardView" class="view hidden">
+    <div class="hero compact">
+      <div class="eyebrow">TRƯỜNG THPT TRẦN HƯNG ĐẠO</div>
+      <h1>Thống kê<br><span>tiết kiệm điện</span></h1>
+      <p>Thống kê hoạt động tiết kiệm điện của khối 11.</p>
+    </div>
+
+    <div class="public-stats-grid">
+      <div class="public-stat"><strong id="publicTotal">0</strong><span>Tổng lượt</span></div>
+      <div class="public-stat"><strong id="public11A1">0</strong><span>Lớp 11A1</span></div>
+      <div class="public-stat"><strong id="public11A2">0</strong><span>Lớp 11A2</span></div>
+      <div class="public-stat"><strong id="public11A3">0</strong><span>Lớp 11A3</span></div>
+      <div class="public-stat"><strong id="public11A4">0</strong><span>Lớp 11A4</span></div>
+    </div>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <div><span class="eyebrow">THỐNG KÊ THEO NGÀY</span><h2>Lượt xác nhận</h2></div>
+        <button id="dashboardReloadButton" class="button light">Làm mới</button>
+      </div>
+      <p class="muted">Theo dõi số lượt xác nhận của các lớp.</p>
+      <div id="dailyChart" class="public-chart"></div>
+      <div id="dashboardFeedback" class="feedback"></div>
+      <small id="publicUpdatedAt" class="muted"></small>
+    </section>
+    <div class="privacy-note">Dashboard chỉ công khai số liệu tổng hợp, không hiển thị thông tin chi tiết học sinh.</div>
+  </section>
+
+  <!-- TRANG THIẾT LẬP -->
+  <section id="setupView" class="view hidden">
+    <div class="hero compact"><div class="eyebrow">THIẾT LẬP LẦN ĐẦU</div><h1>Kết nối<br><span>Firebase</span></h1></div>
+    <div class="panel"><h2>Chưa cấu hình Firebase</h2><p class="muted">Hãy kiểm tra tệp firebase-config.js và cấu hình Firebase của ứng dụng.</p></div>
+  </section>
+
+</main>
+
+<footer>AI POWER REMINDER · TRƯỜNG THPT TRẦN HƯNG ĐẠO</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script type="module" src="./app.js"></script>
 </body>
 </html>
