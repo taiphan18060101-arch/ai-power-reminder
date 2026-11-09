@@ -45,7 +45,7 @@ importScripts(
 // Thay YOUR_FIREBASE_API_KEY bằng apiKey trong firebase-config.js.
 
 firebase.initializeApp({
-  apiKey: "BN3F6kj9HfBw2khL_cHHfYmF0pXGVBd8QUnyA2CevnO7lbCOhpJXV5KLMFh_nne_cAhxdsldHVRfoQbSiwpOOV8",
+  apiKey: "AIzaSyD2PYSmJ4XW3R6ZoC1we8bhYUFve8QyXTU",
   authDomain: "ai-power-reminder.firebaseapp.com",
   projectId: "ai-power-reminder",
   storageBucket: "ai-power-reminder.firebasestorage.app",
