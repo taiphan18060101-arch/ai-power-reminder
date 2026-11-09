@@ -152,21 +152,50 @@ self.addEventListener("activate", event => {
 // Xử lý yêu cầu tải tài nguyên
 
 self.addEventListener("fetch", event => {
-
-  const url = new URL(event.request.url);
+  const request = event.request;
+  const url = new URL(request.url);
 
   if (
-    url.origin === location.origin &&
-    event.request.method === "GET"
+    url.origin !== location.origin ||
+    request.method !== "GET"
   ) {
+    return;
+  }
 
-    event.respondWith(
-      caches.match(event.request).then(cached => {
+  event.respondWith(
+    (async () => {
+      try {
+        const cached = await caches.match(request, {
+          ignoreSearch: true
+        });
 
-        return cached || fetch(event.request);
+        if (cached) {
+          return cached;
+        }
 
-      })
-    );
+        return await fetch(request);
+
+      } catch (error) {
+        console.error("[SW] Fetch thất bại:", request.url, error);
+
+        if (request.mode === "navigate") {
+          const fallback = await caches.match("./index.html");
+
+          if (fallback) {
+            return fallback;
+          }
+        }
+
+        return new Response("Không thể tải tài nguyên.", {
+          status: 503,
+          headers: {
+            "Content-Type": "text/plain; charset=utf-8"
+          }
+        });
+      }
+    })()
+  );
+});
 
   }
 
