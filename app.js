@@ -622,12 +622,7 @@ async function adminLogin() {
     );
   }
 }
-      "adminLoginFeedback",
-      "Đăng nhập thất bại: " + (error.message || "Kiểm tra lại thông tin."),
-      "error"
-    );
-  }
-}
+    
 
 async function showAdminDashboard(user) {
   currentUser = user;
