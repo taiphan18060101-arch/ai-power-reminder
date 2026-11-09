@@ -1,0 +1,41 @@
+
+name: AI Power Reminder - Send Notifications
+
+on:
+  schedule:
+    # Kiểm tra lịch nhắc mỗi 5 phút theo giờ Việt Nam
+    - cron: "*/5 * * * *"
+      timezone: "Asia/Ho_Chi_Minh"
+
+  # Cho phép chạy thủ công để kiểm tra
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ai-power-reminder-send
+  cancel-in-progress: false
+
+jobs:
+  send-reminder:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install --omit=dev
+
+      - name: Send scheduled notifications
+        run: node send-reminder.js
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
