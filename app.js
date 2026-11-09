@@ -1,4 +1,3 @@
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 
 import {
@@ -22,8 +21,16 @@ import {
 
 import {
   firebaseConfig,
-  ADMIN_EMAIL
+  ADMIN_EMAIL,
+  VAPID_PUBLIC_KEY
 } from "./firebase-config.js";
+
+import {
+  getMessaging,
+  getToken,
+  isSupported,
+  onMessage
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging.js";
 
 // ======================================================
 // 1. CẤU HÌNH ỨNG DỤNG
@@ -70,6 +77,8 @@ let app;
 let auth;
 let db;
 let currentUser = null;
+let messaging = null;
+let foregroundMessageHandlerReady = false;
 
 let selected = new Set();
 let checkinData = [];
@@ -297,14 +306,15 @@ async function initStudent() {
   $("honestConfirm")?.addEventListener("change", updateProgress);
 
   $("submitCheckin")?.addEventListener("click", submitCheckin);
+    const notificationButton = $("enableNotificationsButton");
 
-  $("enableNotificationsButton")?.addEventListener("click", () => {
-    feedback(
-      "notificationFeedback",
-      "Chức năng thông báo tự động sẽ được kích hoạt sau khi hoàn thiện cấu hình FCM.",
-      "info"
+  if (notificationButton) {
+    notificationButton.disabled = false;
+    notificationButton.addEventListener(
+      "click",
+      enablePushNotifications
     );
-  });
+  }
 
   renderDevices();
   setClassUI();
@@ -329,6 +339,147 @@ async function initStudent() {
   }
 }
 
+
+
+// ======================================================
+// 4A. ĐĂNG KÝ THIẾT BỊ NHẬN THÔNG BÁO FCM
+// ======================================================
+
+async function enablePushNotifications() {
+  const button = $("enableNotificationsButton");
+
+  try {
+    if (!currentUser) {
+      throw new Error("Ứng dụng chưa xác thực người dùng. Hãy tải lại trang.");
+    }
+
+    if (!("Notification" in window)) {
+      throw new Error("Trình duyệt này không hỗ trợ thông báo.");
+    }
+
+    if (!("serviceWorker" in navigator)) {
+      throw new Error("Trình duyệt không hỗ trợ Service Worker.");
+    }
+
+    if (!window.isSecureContext) {
+      throw new Error("Thông báo chỉ hoạt động trên HTTPS hoặc localhost.");
+    }
+
+    if (!VAPID_PUBLIC_KEY || VAPID_PUBLIC_KEY.trim().length < 20) {
+      throw new Error(
+        "Chưa tìm thấy VAPID_PUBLIC_KEY trong firebase-config.js."
+      );
+    }
+
+    const supported = await isSupported();
+
+    if (!supported) {
+      throw new Error(
+        "Thiết bị hoặc trình duyệt hiện tại chưa hỗ trợ Firebase Cloud Messaging."
+      );
+    }
+
+    const classId = $("classSelect")?.value || getClassFromUrl();
+
+    if (!CLASSES.includes(classId)) {
+      throw new Error("Lớp học không hợp lệ.");
+    }
+
+    if (button) {
+      button.disabled = true;
+      button.textContent = "ĐANG ĐĂNG KÝ...";
+    }
+
+    // Yêu cầu quyền phải được thực hiện sau thao tác nhấn nút của người dùng.
+    let permission = Notification.permission;
+
+    if (permission === "default") {
+      permission = await Notification.requestPermission();
+    }
+
+    if (permission !== "granted") {
+      throw new Error(
+        "Bạn chưa cấp quyền thông báo. Hãy cho phép thông báo trong cài đặt trình duyệt."
+      );
+    }
+
+    // Đảm bảo Service Worker đã được đăng ký và kích hoạt.
+    const registration = await navigator.serviceWorker.ready;
+
+    messaging = getMessaging(app);
+
+    const token = await getToken(messaging, {
+      vapidKey: VAPID_PUBLIC_KEY,
+      serviceWorkerRegistration: registration
+    });
+
+    if (!token) {
+      throw new Error(
+        "Firebase không trả về FCM token. Kiểm tra VAPID key và cấu hình Firebase."
+      );
+    }
+
+    // Mỗi tài khoản ẩn danh lưu một đăng ký theo UID.
+    // Token không được công khai cho học sinh khác.
+    await setDoc(
+      doc(db, "pushSubscriptions", currentUser.uid),
+      {
+        token,
+        classId,
+        updatedAt: serverTimestamp()
+      },
+      { merge: true }
+    );
+
+    // Khi ứng dụng đang mở, nhận thông báo foreground.
+    if (!foregroundMessageHandlerReady) {
+      onMessage(messaging, payload => {
+        const title =
+          payload.notification?.title ||
+          payload.data?.title ||
+          "AI POWER REMINDER";
+
+        const body =
+          payload.notification?.body ||
+          payload.data?.body ||
+          "Đã đến giờ kiểm tra và tắt các thiết bị điện.";
+
+        feedback(
+          "notificationFeedback",
+          `${title}: ${body}`,
+          "success"
+        );
+      });
+
+      foregroundMessageHandlerReady = true;
+    }
+
+    feedback(
+      "notificationFeedback",
+      `Đã bật thông báo cho ${classId} trên thiết bị này. Thiết bị đã được đăng ký với Firebase.`,
+      "success"
+    );
+
+    if (button) {
+      button.textContent = "ĐÃ BẬT THÔNG BÁO";
+      button.disabled = false;
+    }
+
+  } catch (error) {
+    console.error("FCM registration error:", error);
+
+    feedback(
+      "notificationFeedback",
+      error.message || "Không thể đăng ký thông báo.",
+      "error"
+    );
+
+    if (button) {
+      button.textContent = "BẬT THÔNG BÁO";
+      button.disabled = false;
+    }
+  }
+}
 
 // ======================================================
 // 5. GHI NHẬN XÁC NHẬN CỦA HỌC SINH
@@ -471,9 +622,18 @@ async function adminLogin() {
     );
   }
 }
+      "adminLoginFeedback",
+      "Đăng nhập thất bại: " + (error.message || "Kiểm tra lại thông tin."),
+      "error"
+    );
+  }
+}
 
 async function showAdminDashboard(user) {
   currentUser = user;
+
+  const scheduleButton = $("saveReminderScheduleButton");
+  if (scheduleButton) scheduleButton.disabled = false;
 
   $("adminLogin")?.classList.add("hidden");
   $("adminDashboard")?.classList.remove("hidden");
@@ -698,7 +858,7 @@ async function saveReminderSchedule() {
 
     feedback(
       "scheduleFeedback",
-      "Lưu lịch thất bại. Cần bổ sung quyền settings trong Firestore Rules.",
+      "Lưu lịch thất bại. Cần bổ sung quyền truy cập settings trong Firestore Rules.",
       "error"
     );
 
@@ -770,8 +930,6 @@ function downloadQR(classId) {
   link.download = `QR_${classId}.png`;
   link.click();
 }
-
-
 // ======================================================
 // 10. XUẤT DỮ LIỆU CSV
 // ======================================================
