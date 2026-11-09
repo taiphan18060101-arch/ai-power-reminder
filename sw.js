@@ -62,12 +62,9 @@ const messaging = firebase.messaging();
 
 // 5. Nhận thông báo khi ứng dụng chạy nền
 
-messaging.onBackgroundMessage(payload => {
+messaging.onBackgroundMessage(async (payload) => {
 
-  console.log(
-    "[Service Worker] Nhận thông báo:",
-    payload
-  );
+  console.log("[FCM] ĐÃ NHẬN THÔNG BÁO:", payload);
 
   const title =
     payload.notification?.title ||
@@ -79,24 +76,21 @@ messaging.onBackgroundMessage(payload => {
     payload.data?.body ||
     "Các bạn hãy kiểm tra và tắt thiết bị điện trước khi ra về nhé!";
 
-  const options = {
-    body: body,
+  try {
+    await self.registration.showNotification(title, {
+      body: body,
+      data: {
+        url: payload.data?.url || "./"
+      },
+      tag: "ai-power-reminder"
+    });
 
-    icon: "./icon.svg",
+    console.log("[FCM] ĐÃ HIỂN THỊ THÔNG BÁO");
 
-    badge: "./icon.svg",
-
-    data: {
-      url: payload.data?.url || "./"
-    }
-  };
-
-  return self.registration.showNotification(
-    title,
-    options
-  );
+  } catch (error) {
+    console.error("[FCM] LỖI HIỂN THỊ:", error);
+  }
 });
-
 
 // =====================================================
 // 6. CACHE ỨNG DỤNG PWA
